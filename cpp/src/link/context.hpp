@@ -2,6 +2,7 @@
 
 #include <string>
 #include <string_view>
+#include <sys/socket.h>
 #include <unistd.h>
 #include <functional>
 #include <logger.hpp>
@@ -31,86 +32,19 @@ static const std::string get_current_working_directory()
 
 static const char g_null_terminator = '\0';
 //------------------------------------------------------------------
-inline bool is_socket_readable(int socket_fd, int timeout_ms = 30)
-{
-  klog().d("Polling socket");
-  struct pollfd pfd;
-
-  pfd.fd     = socket_fd;
-  pfd.events = POLLIN;
-
-  int result = poll(&pfd, 1, timeout_ms);
-
-  if (result == -1)
-  {
-    klog().e("Poll failed");
-    return false;
-  }
-  else if (result == 0)
-  {
-    klog().t("No data to read from {}", socket_fd);
-    return false;
-  }
-
-  klog().d("Socket ready to be read");
-  return true;
-}
-//------------------------------------------------------------------
-inline size_t write_to_channel(int socket, uint8_t *buffer, size_t size)
-{
-  klog().d("write_to_channel called to write {} bytes to {}", size, socket);
-
-  size_t bytes_written = 0;
-  while (bytes_written < size)
-  {
-    ssize_t curr_written = write(socket, buffer + bytes_written, size - bytes_written);
-    if (curr_written <= 0)
-    {
-      klog().i("Channel write failed with {} bytes written. Error:{}",
-        bytes_written, strerror(errno));
-      return 0;
-    }
-
-    bytes_written += curr_written;
-
-    klog().t("Wrote {} of {} bytes", bytes_written, size);
-  }
-
-  return bytes_written;
-}
-//--------------------------------------------------------------------
-inline size_t read_channel(int socket_fd, uint8_t *buffer, size_t size)
-{
-  klog().d("read_channel called to read {} bytes from {}", size, socket_fd);
-
-  size_t bytes_read = 0;
-  while (bytes_read < size)
-  {
-    ssize_t curr_read = read(socket_fd, buffer + bytes_read, size - bytes_read);
-    if (curr_read <= 0)
-    {
-      klog().i("Error or unable to read with {} bytes read. Last read returned {}. Last error: {}",
-        bytes_read, curr_read, strerror(errno));
-      return 0;
-    }
-
-    bytes_read += curr_read;
-
-    klog().t("read {} of {} bytes", bytes_read, size);
-  }
-
-  return bytes_read;
-}
+size_t write_to_channel(int, uint8_t*, size_t);
+size_t read_channel    (int, uint8_t*, size_t);
+size_t recv_channel    (int, char*,    size_t);
 //--------------------------------------------------------------------
 class context
 {
 public:
   static context&     instance();
 
-  bool           run(int id);
-  int            get_channel_socket() const;
-  void           set_channel_socket(int socket_fd);
-  bool           init(const std::string& token);
+  bool run               ();
+  int  get_channel_socket()                         const;
+  void set_channel_socket(int socket_fd);
+  bool init              (const std::string& token);
 
 private:
   context()                           = default;
@@ -119,8 +53,9 @@ private:
   context operator=(const context& c) = delete;
   context operator=(context&& c)      = delete;
 
-  int  m_socket_fd;
+  bool is_socket_readable(int timeout_ms = 30)      const;
 
+  int  m_socket_fd;
 };
 
 extern context& ctx();

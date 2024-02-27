@@ -29,11 +29,11 @@ using ext_cvt_req_t = dcv::extensions::CloseVirtualChannelRequest;
 
              int  last_request_id   = 1;
 const std::string CHANNEL_NAME = "echo";
-//-----------------------------------------------------------------
-//-----------------------------------------------------------------
+//---------------------------------------------
+//---------------------------------------------
 void write_msg(ext_msg_t &msg);
 
-//-----------------------------------------------------------------
+//---------------------------------------------
 ext_dcv_t *read_next_msg()
 {
   uint32_t msg_sz = 0;
@@ -56,7 +56,7 @@ ext_dcv_t *read_next_msg()
 
   return msg;
 }
-//-----------------------------------------------------------------
+//---------------------------------------------
 void write_request(ext_req_t *request)
 {
   ext_msg_t extension_msg;
@@ -65,7 +65,7 @@ void write_request(ext_req_t *request)
 
   write_msg(extension_msg);
 }
-//-----------------------------------------------------------------
+//---------------------------------------------
 void open_virtual_channel()
 {
   auto request = new ext_req_t();
@@ -79,7 +79,7 @@ void open_virtual_channel()
 
   write_request(request);
 }
-//-----------------------------------------------------------------
+//---------------------------------------------
 void close_virtual_channel()
 {
   auto request = new ext_req_t();
@@ -92,7 +92,7 @@ void close_virtual_channel()
 
   write_request(request);
 }
-//-----------------------------------------------------------------
+//---------------------------------------------
 void write_msg(ext_msg_t &msg)
 {
   int msg_sz;
@@ -112,7 +112,7 @@ void write_msg(ext_msg_t &msg)
 
   free(buf);
 }
-
+//---------------------------------------------
 void DriverOpen()
 {
   open_virtual_channel();
@@ -202,22 +202,16 @@ void DriverOpen()
     throw std::runtime_error("Failed to open virtual channel");
   }
 
-  // TODO: Print event information
-  // DO something?
-
   delete msg;
-
-
 }
-//-----------------------------------------------------------------
+//---------------------------------------------
 void DriverRun()
 {
   klog().d("Running driver");
-  while (!ctx().run(0))
+  while (ctx().run())
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
-
 }
-//-----------------------------------------------------------------
+//---------------------------------------------
 void DriverClose()
 {
   klog().t("Closing driver");

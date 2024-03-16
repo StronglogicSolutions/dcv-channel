@@ -10,7 +10,6 @@
 #include <sstream>
 #include <thread>
 #include <chrono>
-#include <logger.hpp>
 #include "link/context.hpp"
 
 #include "extensions.pb.h"
@@ -206,7 +205,7 @@ void DriverOpen()
 void DriverRun()
 {
   klog().d("Running driver");
-  while (ctx().run())
+  while (ctx().run()) // will block 100ms
     ;
 
 }

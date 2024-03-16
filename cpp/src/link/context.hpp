@@ -33,7 +33,6 @@ static const char g_null_terminator = '\0';
 //------------------------------------------------------------------
 inline bool is_socket_readable(int socket_fd, int timeout_ms = 30)
 {
-  klog().d("Polling socket");
   struct pollfd pfd;
 
   pfd.fd     = socket_fd;
@@ -47,10 +46,7 @@ inline bool is_socket_readable(int socket_fd, int timeout_ms = 30)
     return false;
   }
   else if (result == 0)
-  {
-    klog().t("No data to read from {}", socket_fd);
     return false;
-  }
 
   klog().d("Socket ready to be read");
   return true;
@@ -119,10 +115,9 @@ private:
   context operator=(const context& c) = delete;
   context operator=(context&& c)      = delete;
 
-  int      m_socket_fd; // Amazon NICE DCV channel
+  int      m_socket_fd; // DCV channel
   kiq::ipc m_endpoint;  // IPC channel
 
 };
 
 extern context& ctx();
-
